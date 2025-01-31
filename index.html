@@ -3,91 +3,141 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tic Tac Toe</title>
+    <title>Tic-Tac-Toe</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-
-        .container {
             text-align: center;
+            background-color: #f4f4f4;
         }
-
-        .board {
+        h1 {
+            color: #333;
+        }
+        .game-container {
             display: grid;
             grid-template-columns: repeat(3, 100px);
             grid-template-rows: repeat(3, 100px);
             gap: 5px;
-            margin: 20px auto;
+            justify-content: center;
+            margin-top: 20px;
         }
-
         .cell {
             width: 100px;
             height: 100px;
             background-color: white;
-            border: 2px solid #007BFF;
+            border: 2px solid #333;
             display: flex;
-            justify-content: center;
             align-items: center;
-            font-size: 24px;
+            justify-content: center;
+            font-size: 2em;
             cursor: pointer;
         }
-
-        .message {
-            margin: 20px;
-            font-size: 20px;
+        .cell:hover {
+            background-color: #ddd;
         }
-
+        .winner {
+            font-size: 1.5em;
+            margin-top: 20px;
+            color: green;
+        }
         button {
-            padding: 10px 20px;
-            font-size: 16px;
+            margin-top: 20px;
+            padding: 10px;
+            font-size: 1em;
             cursor: pointer;
-            border: none;
-            border-radius: 5px;
-            background-color: #007BFF;
-            color: white;
-        }
-
-        button:hover {
-            background-color: #0056b3;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Tic Tac Toe</h1>
-        <div class="board" id="board"></div>
-        <div class="message" id="message"></div>
-        <button id="resetButton">Reset Game</button>
+
+    <h1>Tic-Tac-Toe</h1>
+    <div>
+        <button onclick="startGame('human')">2 Players</button>
+        <button onclick="startGame('ai')">Play vs AI</button>
     </div>
+    <div class="game-container" id="gameBoard"></div>
+    <p class="winner" id="winnerText"></p>
+    <button onclick="resetGame()">Reset</button>
+
     <script>
-        const boardElement = document.getElementById('board');
-        const messageElement = document.getElementById('message');
-        const resetButton = document.getElementById('resetButton');
+        let board = ["", "", "", "", "", "", "", "", ""];
+        let currentPlayer = "X";
+        let gameMode = "human"; // Default to human vs human
 
-        let board = ['', '', '', '', '', '', '', '', ''];
-        let currentPlayer = 'X';
-        let gameActive = true;
+        function startGame(mode) {
+            gameMode = mode;
+            resetGame();
+        }
 
-        const winningConditions = [
-            [0, 1, 2],
-            [3, 4, 5],
-            [6, 7, 8],
-            [0, 3, 6],
-            [1, 4, 7],
-            [2, 5, 8],
-            [0, 4, 8],
-            [2, 4, 6]
-        ];
+        function resetGame() {
+            board = ["", "", "", "", "", "", "", "", ""];
+            currentPlayer = "X";
+            document.getElementById("winnerText").textContent = "";
+            renderBoard();
+        }
 
-        function createBoard() {
-            boardElement.innerHTML = '';
-            board.forEach((cell, index) => {
-                const cellElement = document.createElement('div');
-                cellElement.classList.add('cell');
+        function renderBoard() {
+            const gameBoard = document.getElementById("gameBoard");
+            gameBoard.innerHTML = "";
+            board.forEach((value, index) => {
+                const cell = document.createElement("div");
+                cell.classList.add("cell");
+                cell.textContent = value;
+                cell.addEventListener("click", () => handleMove(index));
+                gameBoard.appendChild(cell);
+            });
+        }
+
+        function handleMove(index) {
+            if (board[index] !== "" || checkWinner()) return;
+
+            board[index] = currentPlayer;
+            renderBoard();
+
+            if (checkWinner()) {
+                document.getElementById("winnerText").textContent = `${currentPlayer} Wins!`;
+                return;
+            }
+
+            currentPlayer = currentPlayer === "X" ? "O" : "X";
+
+            if (gameMode === "ai" && currentPlayer === "O") {
+                setTimeout(aiMove, 500);
+            }
+        }
+
+        function aiMove() {
+            let emptyCells = board.map((val, idx) => (val === "" ? idx : null)).filter(val => val !== null);
+            if (emptyCells.length > 0) {
+                let randomIndex = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+                handleMove(randomIndex);
+            }
+        }
+
+        function checkWinner() {
+            const winPatterns = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
+                [0, 3, 6], [1, 4, 7], [2, 5, 8], // Columns
+                [0, 4, 8], [2, 4, 6]             // Diagonals
+            ];
+
+            for (let pattern of winPatterns) {
+                let [a, b, c] = pattern;
+                if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+                    return true;
+                }
+            }
+
+            if (!board.includes("")) {
+                document.getElementById("winnerText").textContent = "It's a Draw!";
+                return true;
+            }
+
+            return false;
+        }
+
+        renderBoard();
+    </script>
+
+</body>
+</html>
